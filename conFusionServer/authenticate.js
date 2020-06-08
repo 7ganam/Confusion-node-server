@@ -19,20 +19,35 @@ var opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = config.secretKey;
 
-exports.jwtPassport = passport.use(new JwtStrategy(opts,
+var strategy =new JwtStrategy(opts,
     (jwt_payload, done) => {
-        console.log("JWT payload: ", jwt_payload);
+        console.log("JWT--- payload: ", jwt_payload);
+        console.log("auth test");
         User.findOne({_id: jwt_payload._id}, (err, user) => {
             if (err) {
-                return done(err, false);
+                console.log("auth test" )
+
+                // return done(err, false);
             }
             else if (user) {
+                console.log("auth test" + user._id)
                 return done(null, user);
             }
             else {
-                return done(null, false);
+                console.log("auth test2" )
+
+                // return done(null, false);
             }
         });
-    }));
+    })
+exports.jwtPassport = passport.use( strategy );
 
 exports.verifyUser = passport.authenticate('jwt', {session: false});
+
+
+
+
+exports.verifyAdmin = function (req, res, next) { 
+    if (!req.user.admin) return res.status(403).send('Not admin');
+    next();
+  }
